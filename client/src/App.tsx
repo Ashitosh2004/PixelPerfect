@@ -7,7 +7,10 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { FirebaseSetupNotice } from "@/components/FirebaseSetupNotice";
+import { SearchCommand } from "@/components/SearchCommand";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import AnalyzePage from "@/pages/analyze";
@@ -17,6 +20,7 @@ import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { databaseError } from "@/lib/firebase";
+import { useState, useEffect } from "react";
 
 function Router() {
   return (
@@ -34,11 +38,24 @@ function Router() {
 
 function AuthenticatedApp() {
   const { currentUser, loading } = useFirebaseAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   if (databaseError) {
     return <FirebaseSetupNotice />;
@@ -64,15 +81,33 @@ function AuthenticatedApp() {
       <div className="flex h-screen w-full">
         <AppSidebar userRole={currentUser.role} userName={currentUser.name} userEmail={currentUser.email} />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/80 backdrop-blur-lg z-50">
+          <header className="flex items-center justify-between gap-2 p-4 border-b sticky top-0 bg-background/80 backdrop-blur-lg z-50">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSearchOpen(true)}
+                className="gap-2"
+                data-testid="button-open-search"
+                aria-label="Search (⌘K)"
+                aria-keyshortcuts="Meta+K Control+K"
+              >
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">Search</span>
+                <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
+              </Button>
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Router />
           </main>
         </div>
       </div>
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
     </SidebarProvider>
   );
 }
