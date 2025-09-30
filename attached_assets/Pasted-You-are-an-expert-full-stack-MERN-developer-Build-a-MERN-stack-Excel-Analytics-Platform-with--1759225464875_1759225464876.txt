@@ -1,0 +1,70 @@
+You are an expert full-stack MERN developer. Build a **MERN stack Excel Analytics Platform** with **Firebase Authentication** for login/signup. The project must be ready to run today and include all core features:
+
+---
+
+### 🔑 Core Features
+
+1. **Authentication (Firebase Only)**
+
+   * Use **Firebase Authentication** for user login/signup (Email/Password + Google login).
+   * Store user profile info (name, email, role: user/admin) in MongoDB.
+   * Admin users can manage all users & see complete upload history.
+   * Protect backend APIs by verifying Firebase ID tokens with **Firebase Admin SDK**.
+
+2. **Excel File Upload & Parsing**
+
+   * Users upload `.xls` or `.xlsx` files.
+   * Use **Multer** in backend for file uploads.
+   * Parse files with **SheetJS/xlsx**.
+   * Dynamically extract column headers.
+
+3. **Data Visualization**
+
+   * Let users select **X-axis** and **Y-axis** from Excel data.
+   * Generate charts with **Chart.js** (bar, line, pie, scatter).
+   * Add **3D chart support** with **Three.js**.
+   * Allow users to **download charts** as PNG or PDF.
+
+4. **Dashboard**
+
+   * Show **upload history** for each user (saved in MongoDB).
+   * Each history record stores filename, date, chart type, and downloadable graph.
+   * Admin dashboard with user management.
+
+5. **Responsive UI**
+
+   * Use **React.js + Tailwind CSS** for modern responsive design.
+   * Mobile friendly and simple to use.
+
+---
+
+### 🛠️ Tech Stack
+
+* **Frontend:** React.js, Redux Toolkit, Chart.js, Three.js, Tailwind CSS, Firebase Auth SDK
+* **Backend:** Node.js, Express.js, MongoDB, Multer, SheetJS/xlsx, Firebase Admin SDK
+* **Tools:** Postman, Git/GitHub, Netlify/Vercel (frontend), Render/Railway (backend)
+
+---
+
+### 📌 Development Requirements
+
+* Separate folders: `/client` (frontend) and `/server` (backend).
+* `.env` file for Firebase credentials + MongoDB URI.
+* Backend: verify Firebase tokens in middleware before accessing protected routes.
+* Include **README.md** with setup instructions.
+* Include **example .env** with all required variables.
+* Must run **without errors** on Replit today.
+
+---
+
+### 🎯 Final Deliverable
+
+A **complete working MERN Excel Analytics Platform** with:
+
+* Firebase Authentication (user & admin)
+* Excel upload + parsing
+* Interactive 2D & 3D charts
+* Downloadable charts
+* User & Admin dashboards
+
+Generate all code now with correct `package.json` dependencies so I can copy, run, and submit today.
