@@ -5,32 +5,53 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock, Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useLocation } from "wouter";
 
 export function LoginForm({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { signIn, signInWithGoogle } = useFirebaseAuth();
+  const [, navigate] = useLocation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Login attempted:", { email });
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await signIn(email, password);
       toast({
         title: "Login successful",
         description: "Welcome back to Excel Analytics Platform",
       });
-    }, 1000);
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google login clicked");
-    toast({
-      title: "Google Sign In",
-      description: "Redirecting to Google authentication...",
-    });
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithGoogle();
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Excel Analytics Platform",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Google Sign In failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -99,14 +120,13 @@ export function LoginForm({ onSwitchToSignup }: { onSwitchToSignup: () => void }
 
         <div className="mt-6 text-center text-sm">
           <span className="text-muted-foreground">Don't have an account? </span>
-          <Button
-            variant="link"
-            className="p-0 h-auto"
+          <button
+            className="text-primary underline-offset-4 hover:underline"
             onClick={onSwitchToSignup}
             data-testid="button-switch-signup"
           >
             Sign up
-          </Button>
+          </button>
         </div>
       </CardContent>
     </Card>

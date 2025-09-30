@@ -3,55 +3,27 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useRealtimeQuery } from "@/hooks/useRealtimeData";
+import { Upload } from "@shared/schema";
+import { formatDistanceToNow } from "date-fns";
 
 export default function ChartsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const { currentUser } = useFirebaseAuth();
+  const { data: uploads, loading } = useRealtimeQuery<Upload>('uploads', 'userId', currentUser?.id || '');
 
-  const mockUploads = [
-    {
-      id: "1",
-      filename: "Q1_Sales_Data.xlsx",
-      date: "2 hours ago",
-      chartType: "bar",
-      xAxis: "Month",
-      yAxis: "Revenue",
-    },
-    {
-      id: "2",
-      filename: "Annual_Report_2024.xlsx",
-      date: "1 day ago",
-      chartType: "line",
-      xAxis: "Quarter",
-      yAxis: "Growth",
-    },
-    {
-      id: "3",
-      filename: "Product_Analysis.xlsx",
-      date: "3 days ago",
-      chartType: "pie",
-      xAxis: "Category",
-      yAxis: "Sales",
-    },
-    {
-      id: "4",
-      filename: "Customer_Data.xlsx",
-      date: "5 days ago",
-      chartType: "scatter",
-      xAxis: "Age",
-      yAxis: "Spending",
-    },
-    {
-      id: "5",
-      filename: "Marketing_Metrics.xlsx",
-      date: "1 week ago",
-      chartType: "bar",
-      xAxis: "Channel",
-      yAxis: "Conversions",
-    },
-  ];
+  const allUploads = uploads?.map(upload => ({
+    id: upload.id,
+    filename: upload.filename,
+    date: formatDistanceToNow(new Date(upload.uploadDate), { addSuffix: true }),
+    chartType: upload.chartType,
+    xAxis: upload.xAxis,
+    yAxis: upload.yAxis,
+  })) || [];
 
-  const filteredUploads = mockUploads.filter((upload) => {
+  const filteredUploads = allUploads.filter((upload) => {
     const matchesSearch = upload.filename.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "all" || upload.chartType === filter;
     return matchesSearch && matchesFilter;
@@ -89,7 +61,15 @@ export default function ChartsPage() {
         </Select>
       </div>
 
-      <UploadHistory uploads={filteredUploads} />
+      {loading ? (
+        <div className="text-center py-8 text-muted-foreground">Loading charts...</div>
+      ) : filteredUploads.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          {search || filter !== "all" ? "No charts match your filters." : "No charts yet. Create your first chart!"}
+        </div>
+      ) : (
+        <UploadHistory uploads={filteredUploads} />
+      )}
     </div>
   );
 }

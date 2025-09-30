@@ -1,50 +1,28 @@
 import { UserTable } from "@/components/UserTable";
 import { StatsCard } from "@/components/StatsCard";
 import { Users, UserPlus, Shield, Activity } from "lucide-react";
+import { useRealtimeList } from "@/hooks/useRealtimeData";
+import { User } from "@shared/schema";
+import { useEffect, useState } from "react";
+import { FirebaseService } from "@/services/firebase.service";
+import { format } from "date-fns";
 
 export default function AdminUsersPage() {
-  const mockUsers = [
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "admin" as const,
-      uploads: 24,
-      joinedDate: "Jan 2024",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "user" as const,
-      uploads: 12,
-      joinedDate: "Feb 2024",
-    },
-    {
-      id: "3",
-      name: "Bob Johnson",
-      email: "bob@example.com",
-      role: "user" as const,
-      uploads: 8,
-      joinedDate: "Mar 2024",
-    },
-    {
-      id: "4",
-      name: "Alice Williams",
-      email: "alice@example.com",
-      role: "user" as const,
-      uploads: 15,
-      joinedDate: "Feb 2024",
-    },
-    {
-      id: "5",
-      name: "Charlie Brown",
-      email: "charlie@example.com",
-      role: "user" as const,
-      uploads: 6,
-      joinedDate: "Apr 2024",
-    },
-  ];
+  const { data: users, loading } = useRealtimeList<User>('users');
+  const [adminStats, setAdminStats] = useState({ totalUsers: 0, newThisMonth: 0, adminUsers: 0, activeToday: 0 });
+
+  useEffect(() => {
+    FirebaseService.getAdminStats().then(setAdminStats);
+  }, [users]);
+
+  const formattedUsers = users?.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    uploads: 0,
+    joinedDate: format(new Date(user.createdAt), 'MMM yyyy'),
+  })) || [];
 
   return (
     <div className="space-y-6">
@@ -56,29 +34,33 @@ export default function AdminUsersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Users"
-          value={156}
+          value={adminStats.totalUsers}
           icon={Users}
           trend={{ value: "8%", positive: true }}
         />
         <StatsCard
           title="New This Month"
-          value={12}
+          value={adminStats.newThisMonth}
           icon={UserPlus}
           trend={{ value: "3%", positive: true }}
         />
         <StatsCard
           title="Admin Users"
-          value={5}
+          value={adminStats.adminUsers}
           icon={Shield}
         />
         <StatsCard
           title="Active Today"
-          value={89}
+          value={adminStats.activeToday}
           icon={Activity}
         />
       </div>
 
-      <UserTable users={mockUsers} />
+      {loading ? (
+        <div className="text-center py-8 text-muted-foreground">Loading users...</div>
+      ) : (
+        <UserTable users={formattedUsers} />
+      )}
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Lock, User, Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useLocation } from "wouter";
 
 export function SignupForm({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
   const [name, setName] = useState("");
@@ -12,26 +14,45 @@ export function SignupForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { signUp, signInWithGoogle } = useFirebaseAuth();
+  const [, navigate] = useLocation();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Signup attempted:", { name, email });
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await signUp(email, password, name);
       toast({
         title: "Account created",
         description: "Welcome to Excel Analytics Platform!",
       });
-    }, 1000);
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Signup failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleSignup = () => {
-    console.log("Google signup clicked");
-    toast({
-      title: "Google Sign Up",
-      description: "Redirecting to Google authentication...",
-    });
+  const handleGoogleSignup = async () => {
+    try {
+      await signInWithGoogle();
+      toast({
+        title: "Account created",
+        description: "Welcome to Excel Analytics Platform!",
+      });
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Google Sign Up failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -87,6 +108,7 @@ export function SignupForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
                 className="pl-9"
                 data-testid="input-signup-password"
                 required
+                minLength={6}
               />
             </div>
           </div>
@@ -116,14 +138,13 @@ export function SignupForm({ onSwitchToLogin }: { onSwitchToLogin: () => void })
 
         <div className="mt-6 text-center text-sm">
           <span className="text-muted-foreground">Already have an account? </span>
-          <Button
-            variant="link"
-            className="p-0 h-auto"
+          <button
+            className="text-primary underline-offset-4 hover:underline"
             onClick={onSwitchToLogin}
             data-testid="button-switch-login"
           >
             Sign in
-          </Button>
+          </button>
         </div>
       </CardContent>
     </Card>

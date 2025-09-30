@@ -3,36 +3,36 @@ import { UploadHistory } from "@/components/UploadHistory";
 import { FileText, BarChart3, Clock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useRealtimeQuery } from "@/hooks/useRealtimeData";
+import { Upload } from "@shared/schema";
+import { useEffect, useState } from "react";
+import { FirebaseService } from "@/services/firebase.service";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
+  const { currentUser } = useFirebaseAuth();
+  const { data: uploads, loading } = useRealtimeQuery<Upload>('uploads', 'userId', currentUser?.id || '');
+  const [stats, setStats] = useState({ totalUploads: 0, chartsCreated: 0, thisWeek: 0, avgGrowth: "0%" });
 
-  const mockUploads = [
-    {
-      id: "1",
-      filename: "Q1_Sales_Data.xlsx",
-      date: "2 hours ago",
-      chartType: "bar",
-      xAxis: "Month",
-      yAxis: "Revenue",
-    },
-    {
-      id: "2",
-      filename: "Annual_Report_2024.xlsx",
-      date: "1 day ago",
-      chartType: "line",
-      xAxis: "Quarter",
-      yAxis: "Growth",
-    },
-    {
-      id: "3",
-      filename: "Product_Analysis.xlsx",
-      date: "3 days ago",
-      chartType: "pie",
-      xAxis: "Category",
-      yAxis: "Sales",
-    },
-  ];
+  useEffect(() => {
+    if (currentUser) {
+      FirebaseService.getUserStats(currentUser.id).then(setStats);
+    }
+  }, [currentUser, uploads]);
+
+  const recentUploads = uploads
+    ?.sort((a, b) => b.uploadDate - a.uploadDate)
+    .slice(0, 3)
+    .map(upload => ({
+      id: upload.id,
+      filename: upload.filename,
+      date: formatDistanceToNow(new Date(upload.uploadDate), { addSuffix: true }),
+      chartType: upload.chartType,
+      xAxis: upload.xAxis,
+      yAxis: upload.yAxis,
+    })) || [];
 
   return (
     <div className="space-y-6">
@@ -44,24 +44,24 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total Uploads"
-          value={24}
+          value={stats.totalUploads}
           icon={FileText}
           trend={{ value: "12%", positive: true }}
         />
         <StatsCard
           title="Charts Created"
-          value={48}
+          value={stats.chartsCreated}
           icon={BarChart3}
           trend={{ value: "8%", positive: true }}
         />
         <StatsCard
           title="This Week"
-          value={7}
+          value={stats.thisWeek}
           icon={Clock}
         />
         <StatsCard
           title="Avg Growth"
-          value="23%"
+          value={stats.avgGrowth}
           icon={TrendingUp}
           trend={{ value: "5%", positive: true }}
         />
@@ -74,7 +74,13 @@ export default function Dashboard() {
             New Upload
           </Button>
         </div>
-        <UploadHistory uploads={mockUploads} />
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">Loading uploads...</div>
+        ) : recentUploads.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">No uploads yet. Create your first chart!</div>
+        ) : (
+          <UploadHistory uploads={recentUploads} />
+        )}
       </div>
     </div>
   );

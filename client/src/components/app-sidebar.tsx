@@ -12,9 +12,17 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useLocation } from "wouter";
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 
-export function AppSidebar({ userRole = "user" }: { userRole?: "user" | "admin" }) {
+interface AppSidebarProps {
+  userRole?: "user" | "admin";
+  userName?: string;
+  userEmail?: string;
+}
+
+export function AppSidebar({ userRole = "user", userName = "User", userEmail = "" }: AppSidebarProps) {
   const [location, navigate] = useLocation();
+  const { signOut } = useFirebaseAuth();
 
   const menuItems = [
     {
@@ -43,6 +51,20 @@ export function AppSidebar({ userRole = "user" }: { userRole?: "user" | "admin" 
   ];
 
   const allItems = userRole === "admin" ? [...menuItems, ...adminItems] : menuItems;
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   return (
     <Sidebar>
@@ -88,16 +110,16 @@ export function AppSidebar({ userRole = "user" }: { userRole?: "user" | "admin" 
           <SidebarMenuItem>
             <SidebarMenuButton className="hover-elevate">
               <Avatar className="h-6 w-6">
-                <AvatarFallback className="text-xs">JD</AvatarFallback>
+                <AvatarFallback className="text-xs">{getInitials(userName)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium">John Doe</p>
+                <p className="text-sm font-medium">{userName}</p>
                 <p className="text-xs text-muted-foreground">{userRole}</p>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton data-testid="button-logout">
+            <SidebarMenuButton onClick={handleLogout} data-testid="button-logout">
               <LogOut className="h-4 w-4" />
               <span>Logout</span>
             </SidebarMenuButton>
