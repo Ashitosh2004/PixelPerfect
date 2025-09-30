@@ -3,14 +3,14 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyB3YBlGN_tp51ydtCEn5qFyntZAHsKVX2U",
+  authDomain: "next-fb8cc.firebaseapp.com",
+  databaseURL: "https://next-fb8cc-default-rtdb.firebaseio.com",
+  projectId: "next-fb8cc",
+  storageBucket: "next-fb8cc.appspot.com",
+  messagingSenderId: "402023480465",
+  appId: "1:402023480465:web:6113da9b8a102f2d9c1330",
+  measurementId: "G-HJ4MX6GJYP"
 };
 
 const app = initializeApp(firebaseConfig);
