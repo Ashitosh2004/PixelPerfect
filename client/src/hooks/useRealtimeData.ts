@@ -111,6 +111,7 @@ export function useRealtimeQuery<T>(path: string, orderBy: string, equalToValue:
         }
       },
       (error) => {
+        console.error('Realtime query error - using indexed query is recommended:', error);
         setLoading(false);
         setError(error.message);
       }

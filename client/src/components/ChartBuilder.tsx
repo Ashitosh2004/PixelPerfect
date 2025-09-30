@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, RefObject } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,13 +6,16 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { BarChart3, LineChart, PieChart, ScatterChart, Download, Box } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { downloadChartAsPNG, downloadChartAsPDF } from "@/lib/chartDownload";
 
 interface ChartBuilderProps {
   columns: string[];
   onChartGenerate: (config: any) => void;
+  chartRef?: RefObject<HTMLDivElement>;
+  filename?: string;
 }
 
-export function ChartBuilder({ columns, onChartGenerate }: ChartBuilderProps) {
+export function ChartBuilder({ columns, onChartGenerate, chartRef, filename }: ChartBuilderProps) {
   const [chartType, setChartType] = useState("bar");
   const [xAxis, setXAxis] = useState("");
   const [yAxis, setYAxis] = useState("");
@@ -37,12 +40,37 @@ export function ChartBuilder({ columns, onChartGenerate }: ChartBuilderProps) {
     });
   };
 
-  const handleDownload = (format: string) => {
-    console.log(`Downloading chart as ${format}`);
-    toast({
-      title: "Download started",
-      description: `Exporting chart as ${format.toUpperCase()}`,
-    });
+  const handleDownload = async (format: string) => {
+    if (!chartRef?.current) {
+      toast({
+        title: "Error",
+        description: "Chart not available for download",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const chartFilename = filename?.replace(/\.[^/.]+$/, "") || "chart";
+      
+      if (format === "png") {
+        await downloadChartAsPNG(chartRef.current, chartFilename);
+      } else if (format === "pdf") {
+        await downloadChartAsPDF(chartRef.current, chartFilename);
+      }
+      
+      toast({
+        title: "Download complete",
+        description: `Chart exported as ${format.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      toast({
+        title: "Download failed",
+        description: "Failed to export chart",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

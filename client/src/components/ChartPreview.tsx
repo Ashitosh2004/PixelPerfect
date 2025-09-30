@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
@@ -7,6 +8,7 @@ interface ChartPreviewProps {
   xAxis: string;
   yAxis: string;
   is3D?: boolean;
+  chartData?: any[];
 }
 
 const mockData = [
@@ -20,7 +22,8 @@ const mockData = [
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProps) {
+export const ChartPreview = forwardRef<HTMLDivElement, ChartPreviewProps>(({ chartType, xAxis, yAxis, is3D, chartData }, ref) => {
+  const data = chartData && chartData.length > 0 ? chartData : mockData;
   const renderChart = () => {
     if (!xAxis || !yAxis) {
       return (
@@ -38,13 +41,13 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
       case "bar":
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={mockData}>
+            <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
+              <XAxis dataKey={xAxis} stroke="hsl(var(--foreground))" />
               <YAxis stroke="hsl(var(--foreground))" />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
               <Legend />
-              <Bar dataKey="value" fill={COLORS[0]} name={yAxis} radius={[4, 4, 0, 0]} />
+              <Bar dataKey={yAxis} fill={COLORS[0]} name={yAxis} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         );
@@ -52,13 +55,13 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
       case "line":
         return (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={mockData}>
+            <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
+              <XAxis dataKey={xAxis} stroke="hsl(var(--foreground))" />
               <YAxis stroke="hsl(var(--foreground))" />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} />
               <Legend />
-              <Line type="monotone" dataKey="value" stroke={COLORS[0]} name={yAxis} strokeWidth={2} />
+              <Line type="monotone" dataKey={yAxis} stroke={COLORS[0]} name={yAxis} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         );
@@ -68,16 +71,17 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={mockData}
+                data={data}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={(entry) => `${entry[xAxis]}: ${(entry[yAxis] / data.reduce((sum, d) => sum + (d[yAxis] || 0), 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill={COLORS[0]}
-                dataKey="value"
+                nameKey={xAxis}
+                dataKey={yAxis}
               >
-                {mockData.map((entry, index) => (
+                {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -91,11 +95,11 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="value" stroke="hsl(var(--foreground))" name={xAxis} />
-              <YAxis dataKey="value2" stroke="hsl(var(--foreground))" name={yAxis} />
+              <XAxis dataKey={xAxis} stroke="hsl(var(--foreground))" name={xAxis} />
+              <YAxis dataKey={yAxis} stroke="hsl(var(--foreground))" name={yAxis} />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }} cursor={{ strokeDasharray: '3 3' }} />
               <Legend />
-              <Scatter name="Data Points" data={mockData} fill={COLORS[0]} />
+              <Scatter name="Data Points" data={data} fill={COLORS[0]} />
             </ScatterChart>
           </ResponsiveContainer>
         );
@@ -106,7 +110,7 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full" ref={ref}>
       <CardHeader>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle>Chart Preview</CardTitle>
@@ -128,4 +132,4 @@ export function ChartPreview({ chartType, xAxis, yAxis, is3D }: ChartPreviewProp
       </CardContent>
     </Card>
   );
-}
+});

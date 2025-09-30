@@ -13,6 +13,7 @@ import Dashboard from "@/pages/dashboard";
 import AnalyzePage from "@/pages/analyze";
 import ChartsPage from "@/pages/charts";
 import AdminUsersPage from "@/pages/admin-users";
+import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { databaseError } from "@/lib/firebase";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/analyze" component={AnalyzePage} />
       <Route path="/charts" component={ChartsPage} />
       <Route path="/admin/users" component={AdminUsersPage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

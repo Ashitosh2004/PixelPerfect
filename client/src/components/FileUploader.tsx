@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
 
 interface FileUploaderProps {
   onFileUpload: (data: any) => void;
@@ -24,7 +25,7 @@ export function FileUploader({ onFileUpload }: FileUploaderProps) {
     setIsDragging(false);
   }, []);
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     const fileData = {
       name: file.name,
       size: (file.size / 1024).toFixed(2) + " KB",
@@ -34,31 +35,54 @@ export function FileUploader({ onFileUpload }: FileUploaderProps) {
     
     setFiles(prev => [...prev, fileData]);
     
-    const interval = setInterval(() => {
-      setFiles(prev => prev.map(f => {
-        if (f.name === file.name && !f.complete) {
-          const newProgress = Math.min(f.progress + 20, 100);
-          return {
-            ...f,
-            progress: newProgress,
-            complete: newProgress === 100,
-          };
-        }
-        return f;
-      }));
-    }, 200);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+      
+      if (jsonData.length === 0) {
+        throw new Error('Empty spreadsheet');
+      }
 
-    setTimeout(() => {
-      clearInterval(interval);
+      const columns = Object.keys(jsonData[0] as object);
+      const chartData = jsonData.map((row: any) => row);
+
+      const interval = setInterval(() => {
+        setFiles(prev => prev.map(f => {
+          if (f.name === file.name && !f.complete) {
+            const newProgress = Math.min(f.progress + 25, 100);
+            return {
+              ...f,
+              progress: newProgress,
+              complete: newProgress === 100,
+            };
+          }
+          return f;
+        }));
+      }, 200);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} is ready for analysis`,
+        });
+        onFileUpload({
+          filename: file.name,
+          columns,
+          data: chartData,
+        });
+      }, 1000);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      setFiles(prev => prev.filter(f => f.name !== file.name));
       toast({
-        title: "File uploaded successfully",
-        description: `${file.name} is ready for analysis`,
+        title: "Error processing file",
+        description: "Could not read Excel file. Please try another file.",
+        variant: "destructive",
       });
-      onFileUpload({
-        filename: file.name,
-        columns: ["Month", "Revenue", "Expenses", "Profit", "Growth"],
-      });
-    }, 1200);
+    }
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {

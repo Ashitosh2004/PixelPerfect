@@ -95,7 +95,11 @@ export function AppSidebar({ userRole = "user", userName = "User", userEmail = "
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton data-testid="nav-settings">
+                <SidebarMenuButton 
+                  onClick={() => navigate("/settings")}
+                  isActive={location === "/settings"}
+                  data-testid="nav-settings"
+                >
                   <Settings className="h-4 w-4" />
                   <span>Settings</span>
                 </SidebarMenuButton>

@@ -74,12 +74,11 @@ export class FirebaseService {
     const db = this.checkDatabase();
     const uploadsRef = ref(db, 'uploads');
     const userUploadsQuery = query(uploadsRef, orderByChild('userId'), equalTo(userId));
+    
     const snapshot = await get(userUploadsQuery);
-    
     if (!snapshot.exists()) return [];
-    
     const uploads = snapshot.val();
-    return Object.values(uploads);
+    return Object.values(uploads) as Upload[];
   }
 
   static async getAllUploads(): Promise<Upload[]> {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FileUploader } from "@/components/FileUploader";
 import { ChartBuilder } from "@/components/ChartBuilder";
 import { ChartPreview } from "@/components/ChartPreview";
@@ -7,10 +7,11 @@ import { FirebaseService } from "@/services/firebase.service";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AnalyzePage() {
-  const [uploadedData, setUploadedData] = useState<{ filename: string; columns: string[] } | null>(null);
+  const [uploadedData, setUploadedData] = useState<{ filename: string; columns: string[]; data: any[] } | null>(null);
   const [chartConfig, setChartConfig] = useState<any>(null);
   const { currentUser } = useFirebaseAuth();
   const { toast } = useToast();
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const handleChartGenerate = async (config: any) => {
     if (!currentUser || !uploadedData) return;
@@ -20,7 +21,7 @@ export default function AnalyzePage() {
         userId: currentUser.id,
         filename: uploadedData.filename,
         chartType: config.chartType,
-        chartData: { columns: uploadedData.columns },
+        chartData: { columns: uploadedData.columns, data: uploadedData.data },
         xAxis: config.xAxis,
         yAxis: config.yAxis,
         is3D: config.is3D || false,
@@ -61,10 +62,12 @@ export default function AnalyzePage() {
               <div>
                 <h2 className="text-lg font-semibold mb-4">Chart Preview</h2>
                 <ChartPreview
+                  ref={chartRef}
                   chartType={chartConfig?.chartType || "bar"}
                   xAxis={chartConfig?.xAxis || ""}
                   yAxis={chartConfig?.yAxis || ""}
                   is3D={chartConfig?.is3D}
+                  chartData={uploadedData.data}
                 />
               </div>
             )}
@@ -78,6 +81,8 @@ export default function AnalyzePage() {
               <ChartBuilder
                 columns={uploadedData.columns}
                 onChartGenerate={handleChartGenerate}
+                chartRef={chartRef}
+                filename={uploadedData.filename}
               />
             </>
           )}
