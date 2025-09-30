@@ -64,7 +64,7 @@ function AuthenticatedApp() {
       <div className="flex h-screen w-full">
         <AppSidebar userRole={currentUser.role} userName={currentUser.name} userEmail={currentUser.email} />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background z-10">
+          <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/80 backdrop-blur-lg z-50">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <ThemeToggle />
           </header>

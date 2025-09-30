@@ -35,10 +35,14 @@ export default function Dashboard() {
     })) || [];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here's your analytics overview.</p>
+    <div className="space-y-8">
+      <div className="relative">
+        <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-2 -right-2 w-32 h-32 bg-accent/5 rounded-full blur-3xl"></div>
+        <div className="relative">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">Welcome back! Here's your analytics overview.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -68,16 +72,16 @@ export default function Dashboard() {
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Uploads</h2>
+        <div className="flex items-center justify-between gap-2 mb-6">
+          <h2 className="text-2xl font-semibold">Recent Uploads</h2>
           <Button onClick={() => navigate("/analyze")} data-testid="button-new-upload">
             New Upload
           </Button>
         </div>
         {loading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading uploads...</div>
+          <div className="text-center py-12 text-muted-foreground">Loading uploads...</div>
         ) : recentUploads.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No uploads yet. Create your first chart!</div>
+          <div className="text-center py-12 text-muted-foreground">No uploads yet. Create your first chart!</div>
         ) : (
           <UploadHistory uploads={recentUploads} />
         )}
